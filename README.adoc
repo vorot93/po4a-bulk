@@ -1,0 +1,15 @@
+= po4a-bulk
+
+Automation wrapper for po4a.
+
+== Description
+https://po4a.org/[po4a] is a set of utilities that enable gettext-based translation management for various document formats: asciidoc, docbook, man, html, latext and others.
+
+*po4a-bulk* allows usage of po4a for large groups of files. It is very handy for large-scale website and documentation translation.
+
+== Utilities
+* *po4a-bulk-gettextize* - gettext template creation.
+* *po4a-bulk-translate* - translated pages generation.
+
+== License
+This package is licensed under the terms of GNU General Public License v3.

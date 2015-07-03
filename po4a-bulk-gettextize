@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Copyright (C) 2015 Artem Vorotnikov
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+if [ "$1" = "--help" ]
+then
+  echo -e "\n$0 [SOURCE DIR] [SOURCE FORMAT] [SOURCE EXTENSION] [POT OUTPUT DIR]\n"
+  echo -e "Bulk POT creation via po4a-gettextize.\n"
+  echo -e "\n$0 allows you to create multiple gettext templates for further translation. It takes files at 'SOURCE DIR/PATH/FILE.EXTENSION' and creates templates at 'TEMPLATE OUTPUT DIR/PATH/FILE.EXTENSTION.pot'. Resulting file structure mirrors source except for .pot file extenstion added.\n"
+  echo -e "\nOperands (mandatory):"
+  echo -e "\n   SOURCE DIR       - directory containing source (i.e. untranslated) files."
+  echo -e "\n   SOURCE FORMAT    - format of the files to parse. See po4a-gettextize --help-format for more info."
+  echo -e "\n   SOURCE EXTENSION - extension of the files to parse."
+  echo -e "\n   POT OUTPUT DIR   - final resting place for generated gettext templates."
+  echo -e "\nAvailable options:"
+  echo -e "\n   --help - show help"
+  echo -e ""
+  echo -e "\nThis program is a part of po4a-bulk package that provides easy mass manipulation for groups of files.\n"
+  exit
+fi
+
+SRCDIR=$1
+SRCFORMAT=$2
+SRCEXT=$3
+POTDIR=$4
+
+if !([ -r "$SRCDIR" ] && [ "$SRCFORMAT" != "" ] && [ "$SRCEXT" != "" ] && [ "$POTDIR" != "" ])
+then
+  echo "Invalid operand(s)."
+  echo "Try $0 --help for more information."
+  exit
+fi
+
+mkdir -p $POTDIR
+
+FILES=$(find $SRCDIR -printf "%P\n" | grep .$SRCEXT)
+
+for file in $FILES
+do
+  basepath=$(echo $file | sed "s|.$SRCEXT||")
+  pot="$basepath.$SRCEXT.pot"
+
+  echo "Generating template $POTDIR/$pot from $SRCDIR/$file"
+  po4a-gettextize -M UTF-8 -L UTF-8 -f $SRCFORMAT -m $SRCDIR/$file -p $POTDIR/$pot
+  sed -i 's|Content-Type: text/plain; charset=CHARSET|Content-Type: text/plain; charset=UTF-8|' $POTDIR/$pot
+  sed -i '/POT-Creation-Date:/d' $POTDIR/$pot
+done
